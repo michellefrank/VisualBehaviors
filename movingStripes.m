@@ -1,6 +1,6 @@
 %% Set default parameters and get screen info 
 
-% Clear the workspace
+% Clear the workspace 
 close all;
 clear all;
 sca;

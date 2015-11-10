@@ -69,7 +69,7 @@ end
 
 % Choose secondary display by default on multi-display setups:
 if nargin < 3
-    screenid = max(Screen('Screens'));
+    screenid = 1; %max(Screen('Screens'));
 end
 
 % Open window with black background color, query its size and redraw
