@@ -1,31 +1,45 @@
-%% Clear everything and establish defaults
+% Uses Matlab''s Psychtoolbox package to create a moving grating stimulus. 
+% Largely adapted from ContrastModulatedGrating demo from PsychToolbox3 
+% (psychtoolbox.org). Written by MMF Nov. 2015.
 
+
+%% Clear everything and establish default PTB parameters
 close all;
 clear all;
 sca;
 
 PsychDefaultSetup(2);
 
+%% Establish experimental parameters
+% This section is where we establish experimental parameters for color and
+% movement.
+
 % set the screen number
-screenNumber = 2;
+screenNumber = 1;
+
+% Set screen background color
+bgColor = [0.4 0 0];
+
+% Set grating color
+gratingColor = [0.4 0.6 0];
+
+% Grating frequency in cycles/pixel (sets spatial frequency)
+freqCyclesPerPix = 0.01;
+
+% Speed in cycles per second (sets temporal frequency)
+cyclesPerSecond = 2;
+
+%% Get/set screen parameters
 
 % Define black and white
 white = WhiteIndex(screenNumber);
 black = BlackIndex(screenNumber);
 grey = white/2;
-inc = white-grey;
-
-% Set default screen color
-defRed = [0.4 0 0];
-
-% Set default bar color
-defGreen = [0.4 0 0.6];%[0.4 0.6 0];
-%% Get screen parameters
 
 % Open an on-screen window
-[window, windowRect] = PsychImaging('OpenWindow', screenNumber, defRed);
+[window, windowRect] = PsychImaging('OpenWindow', screenNumber, bgColor);
 
-% Get the size of the on-screen window (OSW)
+% Get the size of the on-screen window
 [screenXpixels, screenYpixels] = Screen('WindowSize', window);
 
 % Query the frame duration
@@ -37,16 +51,10 @@ ifi = Screen('GetFlipInterval', window);
 % Set up alpha blending for smooth lines
 Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 
-%% Set up grating parameters
+%% Calculate grating parameters
 
-% Grating size in pixels
-gratingSizePix = screenXpixels; %600;
-
-% Grating frequency incycles/pixel
-freqCyclesPerPix = 0.01;
-
-% Drift speed cycles per second
-cyclesPerSecond = 1;
+% Grating size in pixels (we want it to take up the whole screen)
+gratingSizePix = screenXpixels;
 
 % Define half size of the grating image
 texsize = gratingSizePix / 2;
@@ -58,28 +66,24 @@ pixPerCycle = ceil(1 / freqCyclesPerPix);
 freqRad = freqCyclesPerPix * 2 * pi;
 
 % This is the visible size of the grating
-visibleSize = gratingSizePix + 1; %2 * texsize + 1;
+visibleSize = gratingSizePix + 1;
 
-% Define our grating; note it is only 1 pixel high. PTB will make it a full
-% grating upon drawing. We make the grating in a super convoluted way
-% because doing it this way is functional. Wee.
+% Define our grating. We make it in a super convoluted way
+% because this method is functional. Wee.
 x = meshgrid(-texsize:texsize + pixPerCycle, 1);
 grating = round(grey * cos(freqRad*x) + grey);
 
-% Make a two-layer mask filled with the background color
+% Make a two-layer mask (initialized to all ones)
 mask = ones(1, numel(x), 2);
 
-% Define color mod (to make things the right shade)
-colorMod = [0.4 0.6 0];
-
-% Place the grating in the 'alpha' channel of the mask
+% Place the grating in the 'alpha' channel of the mask (i.e. the third
+% dimension). This will make the grating into a transparency.
 mask(:, :, 2) = grating;
 
-% Make our grating mask a texture
-gratingMaskTex = Screen('MakeTexture', window, mask);
+% Make our grating a texture
+gratingTex = Screen('MakeTexture', window, mask);
 
-% Make a destination rectangle for our textures and center this on the
-% screen
+% Make a destination rectangle for our textures and center it on the screen
 dstRect = [0 0 visibleSize visibleSize];
 dstRect = CenterRect(dstRect, windowRect);
 
@@ -102,25 +106,24 @@ shiftPerFrame = cyclesPerSecond * pixPerCycle * waitDuration;
 % Sync us to the vertical retrace
 vbl = Screen('Flip', window);
 
-% Set the frame counter to zero, we need this to 'drift' our grating
+% Initialize the frame counter to zero
 frameCounter = 0;
 
 % Loop until a key is pressed
 while ~KbCheck
     
-    % Calculate the x offset for our window through which to sample our
-    % grating
+    % Calculate the x offset for our grating
     xoffset = mod(frameCounter * shiftPerFrame, pixPerCycle);
     
-    % Now imcrement the frame counter fo the next loop
+    % Increment the frame counter
     frameCounter = frameCounter + 1;
     
-    % Define our source rectangle for grating sampling
+    % Re-define the source rectangle with the x-offset
     srcRect = [xoffset 0 xoffset + visibleSize visibleSize];
     
-    % Draw grating mask
-    Screen('DrawTexture', window, gratingMaskTex, srcRect, dstRect, [],...
-        0, [], colorMod);
+    % Draw grating
+    Screen('DrawTexture', window, gratingTex, srcRect, dstRect, [],...
+        0, [], gratingColor);
     
     % Flip to the screen on the next vertical retrace
     vbl = Screen('Flip', window, vbl + (waitframes - 0.5) * ifi);
