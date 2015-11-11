@@ -7,7 +7,7 @@ sca;
 PsychDefaultSetup(2);
 
 % set the screen number
-screenNumber = 1;
+screenNumber = 2;
 
 % Define black and white
 white = WhiteIndex(screenNumber);
@@ -39,7 +39,7 @@ Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 %% =====Set up the stripes=====
 
 % Define your stripe width (in pix)
-stripeWidth = 100;
+stripeWidth = 120;
 
 % Compute stripe num based on screen width
 numStripes = screenXpixels / stripeWidth;

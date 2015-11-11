@@ -7,7 +7,7 @@ sca;
 PsychDefaultSetup(2);
 
 % set the screen number
-screenNumber = 1;
+screenNumber = 2;
 
 % Define black and white
 white = WhiteIndex(screenNumber);
@@ -19,7 +19,7 @@ inc = white-grey;
 defRed = [0.4 0 0];
 
 % Set default bar color
-defGreen = [0.4 0.6 0];
+defGreen = [0.4 0 0.6];%[0.4 0.6 0];
 %% Get screen parameters
 
 % Open an on-screen window
@@ -61,15 +61,16 @@ freqRad = freqCyclesPerPix * 2 * pi;
 visibleSize = gratingSizePix + 1; %2 * texsize + 1;
 
 % Define our grating; note it is only 1 pixel high. PTB will make it a full
-% grating upon drawing
+% grating upon drawing. We make the grating in a super convoluted way
+% because doing it this way is functional. Wee.
 x = meshgrid(-texsize:texsize + pixPerCycle, 1);
-grating = grey * cos(freqRad*x) + grey;
+grating = round(grey * cos(freqRad*x) + grey);
 
 % Make a two-layer mask filled with the background color
-mask = ones(1, numel(x), 2) * grey;
+mask = ones(1, numel(x), 2);
 
 % Define color mod (to make things the right shade)
-colorMod = [0.8 1 0];
+colorMod = [0.4 0.6 0];
 
 % Place the grating in the 'alpha' channel of the mask
 mask(:, :, 2) = grating;
@@ -119,7 +120,7 @@ while ~KbCheck
     
     % Draw grating mask
     Screen('DrawTexture', window, gratingMaskTex, srcRect, dstRect, [],...
-        [], [], colorMod);
+        0, [], colorMod);
     
     % Flip to the screen on the next vertical retrace
     vbl = Screen('Flip', window, vbl + (waitframes - 0.5) * ifi);
