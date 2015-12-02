@@ -23,8 +23,9 @@ bgColor = [0.4 0 0];
 % Set grating color
 gratingColor = [0.4 0.6 0];
 
-% Grating frequency in cycles/pixel (sets spatial frequency)
-freqCyclesPerPix = 0.01;
+% Grating frequency in cycles/pixel (sets spatial frequency; 
+% basically in units of degrees/360)
+freqCyclesPerPix = 30/360; %0.01;
 
 % Speed in cycles per second (sets temporal frequency)
 cyclesPerSecond = 2;
